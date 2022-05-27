@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"encoding/json"
 	"io"
 	"linkSaveBot/lib/e"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 const (
-	getUpdatesMethod = "getUpdates"
+	getUpdatesMethod  = "getUpdates"
 	sendMessageMethod = "sendMessage"
 )
 
@@ -32,8 +33,10 @@ func newBasePath(token string) string {
 	return "bot" + token
 }
 
-func (c *Client) Updates(offset int, limit int) ([]Update, error) {
-	defer func() { err = e.WrapIfErr("can't get updates", err) }()
+func (c *Client) Updates(offset int, limit int) (updates []Update, err error) {
+	defer func() {
+		err = e.WrapIfErr("can't get updates", err)
+	}()
 
 	q := url.Values{}
 	q.Add("offset", strconv.Itoa(offset))
@@ -46,7 +49,7 @@ func (c *Client) Updates(offset int, limit int) ([]Update, error) {
 
 	var res UpdatesResponse
 
-	if err := json.Unmarshal(data, &res): err != nil {
+	if err := json.Unmarshal(data, &res); err != nil {
 		return nil, err
 	}
 
@@ -71,8 +74,8 @@ func (c *Client) doRequest(method string, query url.Values) (data []byte, err er
 
 	u := url.URL{
 		Scheme: "https",
-		Host: c.host,
-		Path: path.Join(c.basePath, method),
+		Host:   c.host,
+		Path:   path.Join(c.basePath, method),
 	}
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
