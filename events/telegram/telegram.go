@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"errors"
 	"linkSaveBot/clients/telegram"
 	"linkSaveBot/events"
 	"linkSaveBot/lib/e"
@@ -17,6 +18,11 @@ type Meta struct {
 	ChatID   int
 	Username string
 }
+
+var (
+	ErrUnknownEventType = errors.New("unknown event type")
+	ErrUnknownMetaType  = errors.New("unknown meta type")
+)
 
 func New(client *telegram.Client, storage storage.Storage) *Processor {
 	return &Processor{tg: client, storage: storage}
@@ -39,6 +45,32 @@ func (p *Processor) Fetch(limit int) ([]events.Event, error) {
 	}
 
 	p.offset = updates[len(updates)-1].ID + 1
+
+	return res, nil
+}
+
+func (p *Processor) Process(event events.Event) error {
+	switch event.Type {
+	case events.Message:
+		p.processMessage(event)
+	default:
+		return e.Wrap("can't process message", ErrUnknownEventType)
+	}
+}
+
+func (p *Processor) processMessage(event events.Event) error {
+	meta, err := meta(event)
+
+	if err != nil {
+		return e.Wrap("can't process message", err)
+	}
+}
+
+func meta(event events.Event) (Meta, error) {
+	res, ok := event.Meta.(Meta)
+	if !ok {
+		return Meta{}, e.Wrap("can't get meta", ErrUnknownMetaType)
+	}
 
 	return res, nil
 }
