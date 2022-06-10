@@ -85,7 +85,8 @@ func (s Storage) Remove(p *storage.Page) error {
 	}
 
 	path := filepath.Join(s.basePath, p.UserName, fileName)
-	if err != nil {
+
+	if err = os.Remove(path); err != nil {
 		msg := fmt.Sprintf("can't remove file %s", path)
 
 		return e.Wrap(msg, err)

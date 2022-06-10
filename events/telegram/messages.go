@@ -1,8 +1,12 @@
 package telegram
 
-const msgHelp = `help message`
+const msgHelp = `help message
+/start
+/help
+/rnd
+`
 
-const msgHello = " He there! \n\n" + msgHelp
+const msgHello = " Hi there! \n\n" + msgHelp
 
 const (
 	msgUnknownCommand = "Unknown command"
